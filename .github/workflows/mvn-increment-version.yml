@@ -2,7 +2,7 @@ name: Increment Version on Merge
 
 on:
   push:
-    branches: [ master ]
+    branches: [ 'main' ]
 
 jobs:
   build:
