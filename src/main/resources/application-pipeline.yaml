@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: Blog
+  datasource:
+    url: jdbc:h2:mem:default
+    username: root
+    password: root
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
