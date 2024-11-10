@@ -1,0 +1,33 @@
+name: Increment Version on Merge
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Determine current version from POM using XPath
+        id: get_version
+        run: |
+          current_version=$(xmllint --xpath '//project/version/text()' pom.xml)
+          echo "::set-output name=current_version::$current_version"
+      - name: Increment version
+        run: |
+          new_version=$(echo "${{ steps.get_version.outputs.current_version }}" | awk -F. '{ print $1"."$2"."($3+1) }')
+          mvn versions:set -DnewVersion=${new_version}
+      - name: Commit changes
+        run: |
+          git add pom.xml
+          git commit -m "Bump version to ${new_version}"
+      - name: Push changes
+        run: git push
+      - name: Create tag
+        run: git tag v${new_version} && git push origin v${new_version}
