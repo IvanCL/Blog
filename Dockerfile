@@ -3,11 +3,16 @@ ARG JAVA_VERSION=22-ea-21-jdk-slim-bullseye
 FROM maven:3.8.6-jdk-11-slim AS builder
 WORKDIR /app
 
-COPY pom.xml .
-COPY src src
-COPY .mvn .mvn
+COPY ./pom.xml .
+COPY ./src src
+COPY ./.mvn .mvn
 
-RUN --mount=type=cache,target=/root/.m2 \ mvn -B package -DskipTests -Dmaven.java.version=21
+#RUN --mount=type=cache,target=/root/.m2 \ mvn -B package -DskipTests -Dmaven.java.version=21
+RUN --mount=type=cache,target=/root/.m2 \ mvn -B clean package -Dmaven.test.skip -Dmaven.main.skip -Dspring-boot.repackage.skip && rm -r ./target/
+
+COPY ./src ./src
+
+RUN mvn clean package -DskipTests
 
 # Ejecution step
 FROM openjdk:$JAVA_VERSION
