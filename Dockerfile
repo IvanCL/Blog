@@ -1,33 +1,29 @@
 # Builder step
-ARG JAVA_VERSION=22-ea-21-jdk-slim-bullseye
-FROM maven:3.8.6-jdk-11-slim AS builder
+FROM maven:3-amazoncorretto-21-alpine AS builder
+ARG MSVC_NAME=blog
 WORKDIR /app
 
+COPY ./pom.xml /app
+COPY ./.mvn ./.mvn
+#COPY ./mvnw .
 COPY ./pom.xml .
-COPY ./src src
-COPY ./.mvn .mvn
 
-#RUN --mount=type=cache,target=/root/.m2 \ mvn -B package -DskipTests -Dmaven.java.version=21
-RUN mvn -B clean package -Dmaven.test.skip -Dmaven.main.skip -Dspring-boot.repackage.skip && rm -r ./target/
-
+RUN mvn clean package -Dmaven.test.skip -Dmaven.main.skip -Dspring-boot.repackage.skip && rm -r ./target/
+#RUN --mount=type=cache,target=/root/.m2 \
+ #   mvn clean package -DskipTests
 COPY ./src ./src
 
 RUN mvn clean package -DskipTests
 
-# Ejecution step
-FROM openjdk:$JAVA_VERSION
-
-# Install Maven
-RUN apt-get update && apt-get install -y maven
-
-# Set working directory
+FROM openjdk:22-ea-21-jdk-slim-bullseye
+ARG MSVC_NAME=blog
 WORKDIR /app
+RUN mkdir ./logs
 
-# Copy JAR file
-COPY target/*.jar app.jar
+ARG TARGET_FOLDER=/app/target
+COPY --from=builder $TARGET_FOLDER/*.jar .
+ARG PORT_APP=9000
+ENV PORT=$PORT_APP
+EXPOSE $PORT
 
-# Expose port
-EXPOSE 8080
-
-# Start the application
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "Blog-0.0.1-SNAPSHOT.jar"]
