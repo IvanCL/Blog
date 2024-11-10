@@ -8,7 +8,7 @@ COPY ./src src
 COPY ./.mvn .mvn
 
 #RUN --mount=type=cache,target=/root/.m2 \ mvn -B package -DskipTests -Dmaven.java.version=21
-RUN --mount=type=cache,target=/root/.m2 \ mvn -B clean package -Dmaven.test.skip -Dmaven.main.skip -Dspring-boot.repackage.skip && rm -r ./target/
+RUN mvn -B clean package -Dmaven.test.skip -Dmaven.main.skip -Dspring-boot.repackage.skip && rm -r ./target/
 
 COPY ./src ./src
 
